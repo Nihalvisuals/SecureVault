@@ -12,6 +12,8 @@ import com.securevault.dto.LoginResponse;
 import com.securevault.dto.UpdateUserRequest;
 import com.securevault.dto.UserResponse;
 import com.securevault.entity.User;
+import com.securevault.exception.InvalidPasswordException;
+import com.securevault.exception.UserNotFoundException;
 import com.securevault.repository.UserRepository;
 import com.securevault.security.JwtService;
 import com.securevault.service.UserService;
@@ -39,20 +41,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public LoginResponse loginUser(LoginRequest loginRequest) {
 
-        Optional<User> optionalUser =
-                userRepository.findByEmail(loginRequest.getEmail());
-
-        if (optionalUser.isEmpty()) {
-            return new LoginResponse("Email not found", null);
-        }
-
-        User user = optionalUser.get();
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() ->
+                        new UserNotFoundException("Email not found"));
 
         if (!passwordEncoder.matches(
                 loginRequest.getPassword(),
                 user.getPassword())) {
 
-            return new LoginResponse("Invalid Password", null);
+            throw new InvalidPasswordException("Invalid Password");
         }
 
         String token = jwtService.generateToken(user.getEmail());
@@ -63,13 +60,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getCurrentUser(String email) {
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-
-        User user = optionalUser.get();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
         return new UserResponse(
                 user.getId(),
@@ -81,13 +74,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateProfile(String email, UpdateUserRequest request) {
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-
-        User user = optionalUser.get();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
         user.setFullName(request.getFullName());
 
@@ -103,19 +92,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public String changePassword(String email, ChangePasswordRequest request) {
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-
-        if (optionalUser.isEmpty()) {
-            return "User not found";
-        }
-
-        User user = optionalUser.get();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(
                 request.getOldPassword(),
                 user.getPassword())) {
 
-            return "Old password is incorrect";
+            throw new InvalidPasswordException("Old password is incorrect");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -128,13 +113,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public String deleteAccount(String email) {
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
-        if (optionalUser.isEmpty()) {
-            return "User not found";
-        }
-
-        userRepository.delete(optionalUser.get());
+        userRepository.delete(user);
 
         return "Account deleted successfully";
     }

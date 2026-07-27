@@ -18,6 +18,8 @@ import com.securevault.dto.UserResponse;
 import com.securevault.entity.User;
 import com.securevault.service.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -26,7 +28,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public User registerUser(@RequestBody User user) {
+    public User registerUser(@Valid @RequestBody User user) {
         return userService.registerUser(user);
     }
 
