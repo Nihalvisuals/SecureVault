@@ -10,6 +10,7 @@ import com.securevault.dto.LoginRequest;
 import com.securevault.dto.LoginResponse;
 import com.securevault.entity.User;
 import com.securevault.repository.UserRepository;
+import com.securevault.security.JwtService;
 import com.securevault.service.UserService;
 
 @Service
@@ -20,6 +21,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtService jwtService;
 
     @Override
     public User registerUser(User user) {
@@ -37,15 +41,18 @@ public class UserServiceImpl implements UserService {
         Optional<User> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
 
         if (optionalUser.isEmpty()) {
-            return new LoginResponse("Email not found");
+            return new LoginResponse("Email not found", null);
         }
 
         User user = optionalUser.get();
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            return new LoginResponse("Invalid Password");
+            return new LoginResponse("Invalid Password", null);
         }
 
-        return new LoginResponse("Login Successful");
+        // Generate JWT Token
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new LoginResponse("Login Successful", token);
     }
 }
