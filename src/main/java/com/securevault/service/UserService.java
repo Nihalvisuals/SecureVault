@@ -1,5 +1,6 @@
 package com.securevault.service;
 
+import com.securevault.dto.ChangePasswordRequest;
 import com.securevault.dto.LoginRequest;
 import com.securevault.dto.LoginResponse;
 import com.securevault.dto.UpdateUserRequest;
@@ -17,5 +18,7 @@ public interface UserService {
     // Get Current Logged-in User
     UserResponse getCurrentUser(String email);
     UserResponse updateProfile(String email, UpdateUserRequest request);
+    String changePassword(String email, ChangePasswordRequest request);
+    String deleteAccount(String email);
 
 }

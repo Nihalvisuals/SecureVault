@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.securevault.dto.ChangePasswordRequest;
 import com.securevault.dto.LoginRequest;
 import com.securevault.dto.LoginResponse;
 import com.securevault.dto.UpdateUserRequest;
@@ -97,5 +98,44 @@ public class UserServiceImpl implements UserService {
                 updatedUser.getFullName(),
                 updatedUser.getEmail()
         );
+    }
+
+    @Override
+    public String changePassword(String email, ChangePasswordRequest request) {
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            return "User not found";
+        }
+
+        User user = optionalUser.get();
+
+        if (!passwordEncoder.matches(
+                request.getOldPassword(),
+                user.getPassword())) {
+
+            return "Old password is incorrect";
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        userRepository.save(user);
+
+        return "Password changed successfully";
+    }
+
+    @Override
+    public String deleteAccount(String email) {
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            return "User not found";
+        }
+
+        userRepository.delete(optionalUser.get());
+
+        return "Account deleted successfully";
     }
 }
