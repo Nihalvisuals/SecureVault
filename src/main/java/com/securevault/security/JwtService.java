@@ -6,6 +6,7 @@ import javax.crypto.SecretKey;
 
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -18,6 +19,7 @@ public class JwtService {
 
     private final SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
+    // Generate JWT Token
     public String generateToken(String email) {
 
         return Jwts.builder()
@@ -28,4 +30,35 @@ public class JwtService {
                 .compact();
     }
 
+    // Extract all claims
+    private Claims extractAllClaims(String token) {
+
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    // Extract email from token
+    public String extractEmail(String token) {
+
+        return extractAllClaims(token).getSubject();
+    }
+
+    // Check token expiration
+    public boolean isTokenExpired(String token) {
+
+        return extractAllClaims(token)
+                .getExpiration()
+                .before(new Date());
+    }
+
+    // Validate token
+    public boolean isTokenValid(String token, String email) {
+
+        String extractedEmail = extractEmail(token);
+
+        return extractedEmail.equals(email) && !isTokenExpired(token);
+    }
 }

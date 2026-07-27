@@ -1,6 +1,7 @@
 package com.securevault.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,13 @@ public class UserController {
     public LoginResponse loginUser(@RequestBody LoginRequest loginRequest) {
 
         return userService.loginUser(loginRequest);
+
+    }
+
+    @GetMapping("/profile")
+    public String profile() {
+
+        return "Welcome to SecureVault! JWT Authentication Successful.";
 
     }
 }
