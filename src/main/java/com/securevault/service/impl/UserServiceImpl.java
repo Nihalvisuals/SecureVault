@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.securevault.dto.LoginRequest;
 import com.securevault.dto.LoginResponse;
+import com.securevault.dto.UpdateUserRequest;
 import com.securevault.dto.UserResponse;
 import com.securevault.entity.User;
 import com.securevault.repository.UserRepository;
@@ -29,10 +30,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public User registerUser(User user) {
 
-        // Encrypt password before saving
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        // Save user to database
         return userRepository.save(user);
     }
 
@@ -55,7 +54,6 @@ public class UserServiceImpl implements UserService {
             return new LoginResponse("Invalid Password", null);
         }
 
-        // Generate JWT Token
         String token = jwtService.generateToken(user.getEmail());
 
         return new LoginResponse("Login Successful", token);
@@ -76,6 +74,28 @@ public class UserServiceImpl implements UserService {
                 user.getId(),
                 user.getFullName(),
                 user.getEmail()
+        );
+    }
+
+    @Override
+    public UserResponse updateProfile(String email, UpdateUserRequest request) {
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            return null;
+        }
+
+        User user = optionalUser.get();
+
+        user.setFullName(request.getFullName());
+
+        User updatedUser = userRepository.save(user);
+
+        return new UserResponse(
+                updatedUser.getId(),
+                updatedUser.getFullName(),
+                updatedUser.getEmail()
         );
     }
 }
