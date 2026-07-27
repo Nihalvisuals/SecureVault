@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.securevault.dto.LoginRequest;
 import com.securevault.dto.LoginResponse;
+import com.securevault.dto.UserResponse;
 import com.securevault.entity.User;
 import com.securevault.repository.UserRepository;
 import com.securevault.security.JwtService;
@@ -38,7 +39,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public LoginResponse loginUser(LoginRequest loginRequest) {
 
-        Optional<User> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
+        Optional<User> optionalUser =
+                userRepository.findByEmail(loginRequest.getEmail());
 
         if (optionalUser.isEmpty()) {
             return new LoginResponse("Email not found", null);
@@ -46,7 +48,10 @@ public class UserServiceImpl implements UserService {
 
         User user = optionalUser.get();
 
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(
+                loginRequest.getPassword(),
+                user.getPassword())) {
+
             return new LoginResponse("Invalid Password", null);
         }
 
@@ -54,5 +59,23 @@ public class UserServiceImpl implements UserService {
         String token = jwtService.generateToken(user.getEmail());
 
         return new LoginResponse("Login Successful", token);
+    }
+
+    @Override
+    public UserResponse getCurrentUser(String email) {
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            return null;
+        }
+
+        User user = optionalUser.get();
+
+        return new UserResponse(
+                user.getId(),
+                user.getFullName(),
+                user.getEmail()
+        );
     }
 }
