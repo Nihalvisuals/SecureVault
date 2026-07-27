@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.securevault.dto.LoginRequest;
+import com.securevault.dto.LoginResponse;
 import com.securevault.entity.User;
 import com.securevault.service.UserService;
 
@@ -30,5 +32,12 @@ public class UserController {
         System.out.println("Saved User ID : " + savedUser.getId());
 
         return savedUser;
+    }
+
+    @PostMapping("/login")
+    public LoginResponse loginUser(@RequestBody LoginRequest loginRequest) {
+
+        return userService.loginUser(loginRequest);
+
     }
 }

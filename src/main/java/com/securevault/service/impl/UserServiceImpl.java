@@ -1,9 +1,13 @@
 package com.securevault.service.impl;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.securevault.dto.LoginRequest;
+import com.securevault.dto.LoginResponse;
 import com.securevault.entity.User;
 import com.securevault.repository.UserRepository;
 import com.securevault.service.UserService;
@@ -25,5 +29,23 @@ public class UserServiceImpl implements UserService {
 
         // Save user to database
         return userRepository.save(user);
+    }
+
+    @Override
+    public LoginResponse loginUser(LoginRequest loginRequest) {
+
+        Optional<User> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
+
+        if (optionalUser.isEmpty()) {
+            return new LoginResponse("Email not found");
+        }
+
+        User user = optionalUser.get();
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            return new LoginResponse("Invalid Password");
+        }
+
+        return new LoginResponse("Login Successful");
     }
 }
